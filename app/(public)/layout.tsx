@@ -89,9 +89,9 @@ export default function Layout({children}: { readonly children: React.ReactNode 
                     </NavigationMenu>
                 </div>
                 <div className="md:flex justify-end w-24 hidden ">
-                    <Suspense fallback={<Skeleton className={"h-9 w-24"}/>}>
-                        <LoginButton/>
-                    </Suspense>
+                    {/*<Suspense fallback={<Skeleton className={"h-9 w-24"}/>}>*/}
+                    {/*    <LoginButton/>*/}
+                    {/*</Suspense>*/}
                 </div>
                 <div className="md:hidden justify-end w-24 flex">
                     <CustomTrigger/>
