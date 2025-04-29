@@ -1,0 +1,19 @@
+h1{
+    @apply text-4xl sm:text-5xl font-semibold mb-8;
+}
+
+h2{
+    @apply text-2xl my-4;
+}
+
+h3{
+     @apply font-semibold;
+}
+
+p{
+    @apply mb-4;
+}
+
+a {
+    @apply hover:underline underline-offset-2 text-primary;
+}

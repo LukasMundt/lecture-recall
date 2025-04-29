@@ -1,0 +1,13 @@
+{
+  "title": "Streamline",
+  "version": "0.0.1",
+  "healthCheckPath": "/",
+  "httpPort": 3000,
+  "addons": {
+    "localstorage": {},
+    "sendmail": {},
+    "mysql":{}
+  },
+  "manifestVersion": 2,
+  "icon": "logo.png"
+}
