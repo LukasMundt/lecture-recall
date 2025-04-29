@@ -19,7 +19,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PERSONAL_ACCESS_TOKEN }}
       - name: Generate Docker tag
         id: tag
-        run: echo "TAG=${{ vars.DOCKER_HUB_USERNAME }}/streamline:$(date +%s)" >> $GITHUB_ENV
+        run: echo "TAG=${{ vars.DOCKER_HUB_USERNAME }}/lecture-recall:$(date +%s)" >> $GITHUB_ENV
 
       # Build and push Docker image
       - name: Build and push
