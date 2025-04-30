@@ -1,0 +1,20 @@
+.PdfEditor .PdfBgRenderer {
+    position: absolute;
+    pointer-events: none;
+}
+.PdfEditor .PdfBgRenderer img {
+    position: absolute;
+}
+
+.PdfEditor .PageOverlayScreen-screen {
+    pointer-events: none;
+    fill: var(--color-background);
+    fill-opacity: 0.8;
+    stroke: none;
+}
+.PdfEditor .PageOverlayScreen-outline {
+    position: absolute;
+    pointer-events: none;
+    /* border: 1px solid var(--color-overlay); */
+    box-shadow: var(--shadow-2);
+}
