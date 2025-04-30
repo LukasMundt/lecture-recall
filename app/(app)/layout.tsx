@@ -1,7 +1,7 @@
 import NotAuthenticated from "@/components/NotAuthenticated";
 import React from "react";
 
-export default async function Layout({children}: { readonly children: React.ReactNode }) {
+export default async function Layout() {
     // const session = await auth();
 
     // if (!session) {
