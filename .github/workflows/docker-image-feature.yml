@@ -29,6 +29,7 @@ jobs:
         run: |
           BRANCH_NAME="${GITHUB_REF##*/}"
           SAFE_BRANCH=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9-')
+          echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
           echo "SUBDOMAIN=${SAFE_BRANCH}.dev.${{ vars.ROOT_DOMAIN }}" >> $GITHUB_ENV
           echo "TAG=${{ vars.DOCKER_HUB_USERNAME }}/lecture-recall:${SAFE_BRANCH}-$(date +%s)" >> $GITHUB_ENV
 
@@ -50,3 +51,9 @@ jobs:
           cloudron-server: ${{ vars.CLOUDRON_SERVER }}
           cloudron-token: ${{ secrets.CLOUDRON_API_TOKEN }}
           install-if-missing: "true"
+      - name: Add url to ticket using a webhook
+        uses: distributhor/workflow-webhook@v3
+        with:
+          webhook_url: ${{ secrets.WEBHOOK_FRONTEND_URL }}
+          webhook_secret: ${{ secrets.WEBHOOK_FRONTEND_SECRET }}
+          data: '{ "url": ${{env.SUBDOMAIN}}, "issue": ${{env.BRANCH_NAME}}}'
