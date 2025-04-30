@@ -56,4 +56,4 @@ jobs:
         with:
           webhook_url: ${{ secrets.WEBHOOK_FRONTEND_URL }}
           webhook_secret: ${{ secrets.WEBHOOK_FRONTEND_SECRET }}
-          data: '{ "url": ${{env.SUBDOMAIN}}, "issue": ${{env.BRANCH_NAME}}}'
+          data: '{ "url": "${{env.SUBDOMAIN}}", "issue": "${{env.BRANCH_NAME}}"}'
