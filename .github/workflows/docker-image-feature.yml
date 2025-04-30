@@ -51,9 +51,18 @@ jobs:
           cloudron-server: ${{ vars.CLOUDRON_SERVER }}
           cloudron-token: ${{ secrets.CLOUDRON_API_TOKEN }}
           install-if-missing: "true"
-      - name: Add url to ticket using a webhook
-        uses: distributhor/workflow-webhook@v3
-        with:
-          webhook_url: ${{ secrets.WEBHOOK_FRONTEND_URL }}
-          webhook_secret: ${{ secrets.WEBHOOK_FRONTEND_SECRET }}
-          data: '{ "url": "${{env.SUBDOMAIN}}", "issue": "${{env.BRANCH_NAME}}"}'
+      - name: Trigger Jira Automation via Webhook
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Automation-Webhook-Token: ${{ secrets.JIRA_WEBHOOK_TOKEN }}" \
+            --data '{
+              "issues": ["${{env.BRANCH_NAME}}"],
+              "data": {
+                "frontend_url": "${{env.SUBDOMAIN}}"
+              }
+            }' \
+            ${{secrets.JIRA_WEBHOOK_URL}}
+        env:
+          JIRA_WEBHOOK_TOKEN: ${{ secrets.JIRA_WEBHOOK_TOKEN }}
+          JIRA_WEBHOOK_URL: ${{ secrets.JIRA_WEBHOOK_URL }}
