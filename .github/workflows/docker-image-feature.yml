@@ -59,7 +59,7 @@ jobs:
             --data '{
               "issues": ["${{env.BRANCH_NAME}}"],
               "data": {
-                "frontend_url": "${{env.SUBDOMAIN}}"
+                "frontend_url": "https://${{env.SUBDOMAIN}}"
               }
             }' \
             ${{secrets.JIRA_WEBHOOK_URL}}
