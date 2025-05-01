@@ -8,11 +8,11 @@ WORKDIR /app/code
 
 # Copy only what's needed for installing deps
 COPY package*.json ./
-RUN npm ci --omit=dev
 
 # Copy app code and build
 COPY . .
-RUN chmod +x start.sh && \
+RUN chmod +x /app/code/start.sh && \
+    npm ci --omit=dev
     npm run build && \
     cp -r public .next/standalone/ && \
     cp -r .next/static .next/standalone/.next/
