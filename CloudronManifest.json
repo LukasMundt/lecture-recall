@@ -1,5 +1,5 @@
 {
-  "title": "Streamline",
+  "title": "Lecture Recall",
   "version": "0.0.1",
   "healthCheckPath": "/",
   "httpPort": 3000,
