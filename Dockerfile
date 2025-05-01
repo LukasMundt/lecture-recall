@@ -12,7 +12,7 @@ COPY package*.json ./
 # Copy app code and build
 COPY . .
 RUN chmod +x /app/code/start.sh && \
-    npm ci --omit=dev
+    npm ci --omit=dev && \
     npm run build && \
     cp -r public .next/standalone/ && \
     cp -r .next/static .next/standalone/.next/
