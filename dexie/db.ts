@@ -1,10 +1,9 @@
 import Dexie, {Table} from 'dexie';
-import {Box} from 'tldraw';
 import {Pdf} from "@/components/pdf-editor/pdf.types";
 
 export interface SavedData {
     name: string;
-    shapes?: any[];
+    shapes?: SavedShape[];
     pdf?: Pdf;
     lastModified: string;
 }
@@ -49,41 +48,11 @@ export async function loadFromDB(name: string): Promise<SavedData | undefined> {
     }
 }
 
-// Hilfsfunktion zum Laden der PDF-Daten
-export async function loadPdfFromDB(name: string): Promise<{ pdf: any | null, shapes?: any[] }> {
+export async function loadRecentLocalPdfs(): Promise<{name: string, lastModified: string}[]> {
     try {
-        const savedData = await loadFromDB(name);
-        if (!savedData?.pdf) return {pdf: null};
-
-        // Konvertiere den String zurück in ein ArrayBuffer
-        const binaryString = savedData.pdf.source;
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
-        }
-        const sourceBuffer = bytes.buffer;
-
-        // Konvertiere die Bounds in Box-Objekte
-        const pages = savedData.pdf.pages.map((page: any) => ({
-            ...page,
-            bounds: new Box(
-                page.bounds.x,
-                page.bounds.y,
-                page.bounds.w,
-                page.bounds.h
-            )
-        }));
-
-        return {
-            pdf: {
-                name: savedData.pdf.name,
-                pages,
-                source: sourceBuffer
-            },
-            shapes: savedData.shapes
-        };
+        return await db.pdfs.toArray().then((pdfs) => pdfs.map((pdf) => ({name: pdf.name, lastModified: pdf.lastModified})));
     } catch (error) {
-        console.error('Fehler beim Laden der PDF aus der Datenbank:', error);
-        return {pdf: null};
+        console.error('Fehler beim Laden der Namen der gespeicherten PDFs:', error);
+        return [];
     }
 }

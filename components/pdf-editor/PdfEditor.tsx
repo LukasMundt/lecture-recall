@@ -12,6 +12,7 @@ import {
     track,
     useEditor,
     IndexKey,
+    TLShapeId,
 } from 'tldraw';
 import './style.css'
 import {ExportPdfButton} from "@/components/pdf-editor/ExportPdfButton";
@@ -79,7 +80,7 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
 
     // Funktion zum Speichern der PDF
     const savePdf = async () => {
-        const pdfData = {
+        const pdfData : Pdf = {
             name: pdf.name,
             pages: pdf.pages.map(page => ({
                 src: page.src,
@@ -149,7 +150,13 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
                     // Lade die gespeicherten Shapes, wenn vorhanden
                     const savedData = await loadFromDB(pdf.name);
                     if (savedData?.shapes && savedData.shapes.length > 0) {
-                        editor.createShapes(savedData.shapes);
+                        const shapes = savedData.shapes.map(shape => ({
+                            ...shape,
+                            id: shape.id as TLShapeId,
+                            index: shape.index as IndexKey,
+                            type: shape.type as string
+                        }));
+                        editor.createShapes(shapes as TLShapePartial[]);
                     }
                 }, 100);
 

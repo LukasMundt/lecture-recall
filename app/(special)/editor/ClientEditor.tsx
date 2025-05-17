@@ -34,8 +34,6 @@ export default function ClientEditor() {
         checkExistingData();
     }, []);
 
-    console.log(state);
-
     switch (state.phase) {
         case 'loading':
             return (
