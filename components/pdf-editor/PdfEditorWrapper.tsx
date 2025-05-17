@@ -4,17 +4,15 @@ import {PdfEditor} from "@/components/pdf-editor/PdfEditor";
 import {loadFromDB, SavedData} from "@/dexie/db";
 import {useEffect, useState} from "react";
 import Loading from "../Loading";
+import {toast} from "sonner";
 
-export default function PdfEditorWrapper({pdf}: { pdf: Pdf | string }) {
+export default function PdfEditorWrapper({pdf, onError}: { pdf: Pdf | string, onError: (error?: string) => void }) {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<SavedData | undefined>(undefined);
-    const [error, setError] = useState<boolean>(false);
 
     useEffect(() => {
         async function loadPdf(): Promise<void> {
             if (typeof pdf !== "string") {
-                setError(true);
-                setLoading(false);
                 return;
             }
 
@@ -23,20 +21,23 @@ export default function PdfEditorWrapper({pdf}: { pdf: Pdf | string }) {
                 const data = await loadFromDB(pdf);
 
                 if (!data?.pdf) {
-                    setError(true);
+                    onError();
+                    toast.error("PDF konnte nicht geladen werden.")
                     return;
                 }
 
                 setData(data);
             } catch (err) {
-                setError(true);
+                onError();
+                toast.error("PDF konnte nicht geladen werden.")
                 console.error("Fehler beim Laden des PDFs:", err);
             } finally {
                 setLoading(false);
             }
         }
-
-        loadPdf();
+        if (typeof pdf === "string") {
+            loadPdf();
+        }
     }, [pdf]);
 
     if (typeof pdf !== "string") {
@@ -45,10 +46,6 @@ export default function PdfEditorWrapper({pdf}: { pdf: Pdf | string }) {
 
     if (loading) {
         return <Loading><p className='text-lg'>Lade PDF...</p></Loading>;
-    }
-
-    if (error) {
-        return <div className="text-red-500 p-4">Fehler beim Laden des PDFs</div>;
     }
 
     if (!data?.pdf) {

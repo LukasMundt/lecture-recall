@@ -109,10 +109,7 @@ export function PdfPicker({onOpenPdf}: PdfPickerProps) {
     }
 
     if (isLoading) {
-        return (<div className="h-dvh w-full items-center flex flex-col justify-center absolute">
-            <Loader className="animate-spin" />
-            <span className="sr-only">Loading</span>
-        </div>);
+        return <Loading/>;
     }
 
     return (
