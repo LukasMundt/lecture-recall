@@ -48,9 +48,9 @@ export async function loadFromDB(name: string): Promise<SavedData | undefined> {
     }
 }
 
-export async function loadRecentLocalPdfs(): Promise<{name: string, lastModified: string}[]> {
+export async function loadRecentLocalPdfs(): Promise<{name: string, lastModified: Date}[]> {
     try {
-        return await db.pdfs.toArray().then((pdfs) => pdfs.map((pdf) => ({name: pdf.name, lastModified: pdf.lastModified})));
+        return await db.pdfs.toArray().then((pdfs) => pdfs.map((pdf) => ({name: pdf.name, lastModified: new Date(pdf.lastModified)})));
     } catch (error) {
         console.error('Fehler beim Laden der Namen der gespeicherten PDFs:', error);
         return [];

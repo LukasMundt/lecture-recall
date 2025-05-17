@@ -6,11 +6,12 @@ import {
     createShapeId,
 } from 'tldraw';
 import {Button} from "@/components/ui/button";
-import {Loader, FileText, Clock, Plus} from "lucide-react";
+import {FileText, Clock, Plus} from "lucide-react";
 import {Pdf, PdfPage} from "@/components/pdf-editor/pdf.types";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {ScrollArea} from "@/components/ui/scroll-area";
 import {loadRecentLocalPdfs} from "@/dexie/db";
+import Loading from '@/components/Loading';
 
 const pageSpacing = 32;
 
@@ -20,14 +21,14 @@ interface PdfPickerProps {
 
 export function PdfPicker({onOpenPdf}: PdfPickerProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [recentPdfs, setRecentPdfs] = useState<{name: string, lastModified: string}[]>([]);
+    const [recentPdfs, setRecentPdfs] = useState<{name: string, lastModified: Date}[]>([]);
 
     useEffect(() => {
         async function loadRecentPdfs() {
             const allPdfs = await loadRecentLocalPdfs();
             if (allPdfs) {
                 setRecentPdfs(allPdfs.sort((a, b) => 
-                    new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+                    b.lastModified.getTime() - a.lastModified.getTime()
                 ));
             }
         }
