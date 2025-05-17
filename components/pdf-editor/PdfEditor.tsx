@@ -1,5 +1,5 @@
 "use client";
-import {useMemo, useEffect, useRef} from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import {
     Box,
     SVGContainer,
@@ -15,11 +15,12 @@ import {
     TLShapeId,
 } from 'tldraw';
 import './style.css'
-import {ExportPdfButton} from "@/components/pdf-editor/ExportPdfButton";
-import {Pdf} from "@/components/pdf-editor/pdf.types";
-import {saveToDB, loadFromDB, SavedData} from '@/dexie/db';
-import {saveLastOpenedPdf} from './logic';
+import { ExportPdfButton } from "@/components/pdf-editor/ExportPdfButton";
+import { Pdf } from "@/components/pdf-editor/pdf.types";
+import { saveToDB, loadFromDB, SavedData } from '@/dexie/db';
+import { saveLastOpenedPdf } from './logic';
 import Loading from '../Loading';
+import SaveStatusIndicator, {SavingStatus} from './SaveStatusIndicator';
 
 // TODO:
 // - prevent changing pages (create page, change page, move shapes to new page)
@@ -27,22 +28,27 @@ import Loading from '../Loading';
 // - inertial scrolling for constrained camera
 // - render pages on-demand instead of all at once.
 
-export function PdfEditor({pdf}: { pdf: Pdf }) {
-    const components = useMemo<TLComponents>(
-        () => ({
-            PageMenu: null,
-            InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf}/>,
-            LoadingScreen: () => <Loading><p className='text-lg'>Lade PDF...</p></Loading>,
-            SharePanel: () => <ExportPdfButton pdf={pdf}/>,
-        }),
-        [pdf]
-    );
-
-    // Speicherintervall
+export function PdfEditor({ pdf }: { pdf: Pdf }) {
+    const [saveStatus, setSaveStatus] = useState<SavingStatus>('saved');
     const lastSaveTime = useRef<number>(0);
     const hasChanges = useRef<boolean>(false);
     const SAVE_INTERVAL = 10000; // 10 Sekunden
     const PDF_SAVE_DELAY = 1000; // 1 Sekunde Verzug für PDF-Speicherung
+
+    const components = useMemo<TLComponents>(
+        () => ({
+            PageMenu: null,
+            InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf} />,
+            LoadingScreen: () => <Loading><p className='text-lg'>Lade PDF...</p></Loading>,
+            SharePanel: () => (
+                <div className="flex items-center gap-2" style={{ zIndex: 100000 }}>
+                    <SaveStatusIndicator status={saveStatus} />
+                    <ExportPdfButton pdf={pdf} />
+                </div>
+            ),
+        }),
+        [pdf, saveStatus]
+    );
 
     // Speichere die zuletzt geöffnete PDF für den tab
     useEffect(() => {
@@ -54,9 +60,11 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
         const now = Date.now();
         if (now - lastSaveTime.current < SAVE_INTERVAL) {
             hasChanges.current = true;
+            setSaveStatus('unsaved');
             return;
         }
 
+        setSaveStatus('saving');
         const shapes = editor.getCurrentPageShapes();
         const nonLockedShapes = shapes.filter((shape: any) => !shape.isLocked);
 
@@ -73,14 +81,16 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
 
             lastSaveTime.current = now;
             hasChanges.current = false;
+            setSaveStatus('saved');
         } catch (error) {
             console.error('Fehler beim Speichern der Shapes in der Datenbank:', error);
+            setSaveStatus('unsaved');
         }
     };
 
     // Funktion zum Speichern der PDF
     const savePdf = async () => {
-        const pdfData : Pdf = {
+        const pdfData: Pdf = {
             name: pdf.name,
             pages: pdf.pages.map(page => ({
                 src: page.src,
@@ -169,7 +179,7 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
                     (prev, next) => {
                         if (!shapeIdSet.has(next.id)) return next;
                         if (next.isLocked) return next;
-                        return {...prev, isLocked: true};
+                        return { ...prev, isLocked: true };
                     }
                 );
 
@@ -203,14 +213,14 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
                     editor.setCameraOptions({
                         constraints: {
                             bounds: targetBounds,
-                            padding: {x: isMobile ? 16 : 164, y: 64},
-                            origin: {x: 0.5, y: 0},
+                            padding: { x: isMobile ? 16 : 164, y: 64 },
+                            origin: { x: 0.5, y: 0 },
                             initialZoom: 'fit-x-100',
                             baseZoom: 'default',
                             behavior: 'contain',
                         },
                     });
-                    editor.setCamera(editor.getCamera(), {reset: true});
+                    editor.setCamera(editor.getCamera(), { reset: true });
                 }
 
                 let isMobile = editor.getViewportScreenBounds().width < 840;
@@ -257,8 +267,8 @@ export function PdfEditor({pdf}: { pdf: Pdf }) {
 }
 
 const PageOverlayScreen = track(function PageOverlayScreen({
-                                                               pdf,
-                                                           }: {
+    pdf,
+}: {
     pdf: Pdf;
 }) {
     const editor = useEditor();
@@ -274,13 +284,13 @@ const PageOverlayScreen = track(function PageOverlayScreen({
                 x: page.bounds.maxX,
                 y: page.bounds.maxY,
             });
-            
+
             // Validiere die Werte
             const width = Math.max(0, bottomRight.x - topLeft.x);
             const height = Math.max(0, bottomRight.y - topLeft.y);
-            
+
             if (isNaN(width) || isNaN(height)) return null;
-            
+
             return new Box(
                 topLeft.x,
                 topLeft.y,

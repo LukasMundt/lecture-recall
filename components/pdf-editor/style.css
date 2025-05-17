@@ -2,3 +2,6 @@
     z-index: var(--layer-panels);
     pointer-events: all;
 }
+.SaveStatusIndicator {
+    z-index: var(--layer-panels);
+}
