@@ -89,13 +89,6 @@ export function PdfEditor({ pdf, onBackToPick }: { pdf: Pdf, onBackToPick: () =>
                 savedSuccessfully = false;
             }
         }
-        try {
-            const camera = editor.getCamera();
-            await saveScrollPositionToDB(pdf.name, camera.x, camera.y);
-        } catch (e) {
-            console.error('Fehler beim Speichern der Scroll-Position:', e);
-            savedSuccessfully = false;
-        }
         return savedSuccessfully;
     }, [performSaveShapesLogic, pdf.name]);
 
