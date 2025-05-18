@@ -19,7 +19,7 @@ import './style.css'
 import { ExportPdfButton } from "@/components/pdf-editor/ExportPdfButton";
 import { Pdf } from "@/components/pdf-editor/pdf.types";
 import { saveToDB, loadFromDB, SavedData, loadScrollPositionsFromDB, saveScrollPositionToDB } from '@/dexie/db';
-import { saveLastOpenedPdf } from './logic';
+import {removeLastOpenedPdf, saveLastOpenedPdf} from './logic';
 import Loading from '../Loading';
 import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
 import { Button } from "@/components/ui/button";
@@ -97,6 +97,7 @@ export function PdfEditor({ pdf, onBackToPick }: { pdf: Pdf, onBackToPick: () =>
     const handleBackToPick = useCallback(async () => {
         if (editorRef.current) {
             await forceSaveAllPendingChanges(editorRef.current);
+            removeLastOpenedPdf();
         }
         if (typeof onBackToPick === 'function') {
             onBackToPick();

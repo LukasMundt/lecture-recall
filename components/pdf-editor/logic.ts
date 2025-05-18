@@ -16,3 +16,12 @@ export function saveLastOpenedPdf(name: string) {
         console.error('Fehler beim Speichern der zuletzt geöffneten PDF:', error);
     }
 }
+
+// Hilfsfunktion zum Löschen der zuletzt geöffneten PDF
+export function removeLastOpenedPdf(): void {
+    try {
+        sessionStorage.removeItem('last-opened-pdf');
+    } catch (error) {
+        console.error('Fehler beim Löschen der zuletzt geöffneten PDF:', error);
+    }
+}
