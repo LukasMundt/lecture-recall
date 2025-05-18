@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import Loading from "../Loading";
 import { toast } from "sonner";
 
-export default function PdfEditorWrapper({ pdf, onError }: { pdf: Pdf | string, onError: (error?: string) => void }) {
+export default function PdfEditorWrapper({ pdf, onBackToPick }: { pdf: Pdf | string, onBackToPick: () => void }) {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<SavedData | undefined>(undefined);
 
@@ -21,14 +21,14 @@ export default function PdfEditorWrapper({ pdf, onError }: { pdf: Pdf | string, 
                 const data = await loadFromDB(pdf);
 
                 if (!data?.pdf) {
-                    onError();
+                    onBackToPick();
                     toast.error("PDF konnte nicht geladen werden.")
                     return;
                 }
 
                 setData(data);
             } catch (err) {
-                onError();
+                onBackToPick();
                 toast.error("PDF konnte nicht geladen werden.")
                 console.error("Fehler beim Laden des PDFs:", err);
             } finally {
@@ -41,7 +41,7 @@ export default function PdfEditorWrapper({ pdf, onError }: { pdf: Pdf | string, 
     }, [pdf]);
 
     if (typeof pdf !== "string") {
-        return <PdfEditor pdf={pdf} />;
+        return <PdfEditor pdf={pdf} onBackToPick={onBackToPick} />;
     }
 
     if (loading) {
@@ -52,5 +52,5 @@ export default function PdfEditorWrapper({ pdf, onError }: { pdf: Pdf | string, 
         return <div className="p-4">Keine PDF-Daten gefunden</div>;
     }
 
-    return <PdfEditor pdf={data.pdf} />;
+    return <PdfEditor pdf={data.pdf} onBackToPick={onBackToPick} />;
 }

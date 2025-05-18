@@ -48,7 +48,7 @@ export default function ClientEditor() {
         case 'edit':
             return (
                 <div className="h-dvh w-full flex flex-col absolute items-center justify-center text-center gap-[21px] PdfEditor">
-                    <PdfEditorWrapper pdf={state.pdf} onError={() => setState({ phase: 'pick' })} />
+                    <PdfEditorWrapper pdf={state.pdf} onBackToPick={() => setState({ phase: 'pick' })} />
                 </div>
             );
     }

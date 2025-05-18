@@ -13,7 +13,7 @@ export function ExportPdfButton({ pdf }: { pdf: Pdf }) {
 
     return (
         <Button
-            className="mr-3 mt-3 cursor-pointer ExportPdfButton"
+            className="mr-2 mt-2 mb-1 cursor-pointer ButtonOnCanvas"
             onClick={async () => {
                 setExportProgress(0)
                 try {

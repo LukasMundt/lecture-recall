@@ -1,4 +1,4 @@
-.ExportPdfButton {
+.ButtonOnCanvas {
     z-index: var(--layer-panels);
     pointer-events: all;
 }

@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import {
     Box,
     SVGContainer,
@@ -13,6 +13,7 @@ import {
     useEditor,
     IndexKey,
     TLShapeId,
+    DefaultMenuPanel, Editor,
 } from 'tldraw';
 import './style.css'
 import { ExportPdfButton } from "@/components/pdf-editor/ExportPdfButton";
@@ -21,6 +22,8 @@ import { saveToDB, loadFromDB, SavedData, loadScrollPositionsFromDB, saveScrollP
 import { saveLastOpenedPdf } from './logic';
 import Loading from '../Loading';
 import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from 'lucide-react';
 
 // TODO:
 // - prevent sending shapes behind the pages
@@ -28,12 +31,79 @@ import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
 // - inertial scrolling for constrained camera
 // - render pages on-demand instead of all at once.
 
-export function PdfEditor({ pdf }: { pdf: Pdf }) {
+export function PdfEditor({ pdf, onBackToPick }: { pdf: Pdf, onBackToPick: () => void }) {
     const [saveStatus, setSaveStatus] = useState<SavingStatus>('saved');
     const lastSaveTime = useRef<number>(0);
     const hasChanges = useRef<boolean>(false);
     const SAVE_INTERVAL = 10000; // 10 Sekunden
     const PDF_SAVE_DELAY = 1000; // 1 Sekunde Verzug für PDF-Speicherung
+    const editorRef = useRef<Editor>(null);
+
+    const performSaveShapesLogic = useCallback(async (editor: any) => {
+        if (!editor) return;
+        setSaveStatus('saving');
+        const shapes = editor.getCurrentPageShapes();
+        const nonLockedShapes = shapes.filter((shape: any) => !shape.isLocked);
+
+        try {
+            const currentSavedData = await loadFromDB(pdf.name);
+            const newData: SavedData = {
+                name: pdf.name,
+                shapes: nonLockedShapes,
+                lastModified: new Date().toISOString(),
+                pdf: currentSavedData?.pdf
+            };
+            await saveToDB(newData);
+            lastSaveTime.current = Date.now();
+            hasChanges.current = false;
+            setSaveStatus('saved');
+        } catch (error) {
+            console.error('Fehler beim Speichern der Shapes in der Datenbank:', error);
+            setSaveStatus('unsaved');
+            throw error;
+        }
+    }, [pdf.name, setSaveStatus]);
+
+    const autoSaveShapes = useCallback(async (editor: any) => {
+        if (!editor) return;
+        const now = Date.now();
+        if (hasChanges.current && (now - lastSaveTime.current >= SAVE_INTERVAL)) {
+            await performSaveShapesLogic(editor);
+        } else if (hasChanges.current && saveStatus !== 'unsaved') {
+            setSaveStatus('unsaved');
+        }
+    }, [performSaveShapesLogic, SAVE_INTERVAL, saveStatus, setSaveStatus]);
+
+    const forceSaveAllPendingChanges = useCallback(async (editor: any) => {
+        if (!editor) return;
+        let savedSuccessfully = true;
+        if (hasChanges.current) {
+            try {
+                await performSaveShapesLogic(editor);
+            } catch (e) {
+                savedSuccessfully = false;
+            }
+        }
+        try {
+            const camera = editor.getCamera();
+            await saveScrollPositionToDB(pdf.name, camera.x, camera.y);
+        } catch (e) {
+            console.error('Fehler beim Speichern der Scroll-Position:', e);
+            savedSuccessfully = false;
+        }
+        return savedSuccessfully;
+    }, [performSaveShapesLogic, pdf.name]);
+
+    const handleBackToPick = useCallback(async () => {
+        if (editorRef.current) {
+            await forceSaveAllPendingChanges(editorRef.current);
+        }
+        if (typeof onBackToPick === 'function') {
+            onBackToPick();
+        } else {
+            console.warn("PdfEditor: onBackToPick prop was not provided or is not a function.");
+        }
+    }, [editorRef, forceSaveAllPendingChanges, onBackToPick]);
 
     const components = useMemo<TLComponents>(
         () => ({
@@ -46,49 +116,23 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                     <ExportPdfButton pdf={pdf} />
                 </div>
             ),
+            MenuPanel: () => (<div className='flex items-center gap-2'>
+                <DefaultMenuPanel />
+                <Button onClick={handleBackToPick} variant="outline" size="sm" className="cursor-pointer ButtonOnCanvas flex items-center gap-1">
+                    <ArrowLeft size={16} /> Zurück
+                </Button>
+            </div>)
         }),
-        [pdf, saveStatus]
+        [pdf, saveStatus, handleBackToPick]
     );
 
-    // Speichere die zuletzt geöffnete PDF für den tab
     useEffect(() => {
         saveLastOpenedPdf(pdf.name);
     }, [pdf]);
 
-    // Funktion zum Speichern der Shapes
-    const saveShapes = async (editor: any) => {
-        const now = Date.now();
-        if (now - lastSaveTime.current < SAVE_INTERVAL) {
-            hasChanges.current = true;
-            setSaveStatus('unsaved');
-            return;
-        }
+    // Die alte saveShapes Funktion wird entfernt.
+    // const saveShapes = async (editor: any) => { ... }; 
 
-        setSaveStatus('saving');
-        const shapes = editor.getCurrentPageShapes();
-        const nonLockedShapes = shapes.filter((shape: any) => !shape.isLocked);
-
-        try {
-            const savedData = await loadFromDB(pdf.name);
-            const newData: SavedData = {
-                name: pdf.name,
-                shapes: nonLockedShapes,
-                lastModified: new Date().toISOString(),
-                pdf: savedData?.pdf
-            };
-
-            await saveToDB(newData);
-
-            lastSaveTime.current = now;
-            hasChanges.current = false;
-            setSaveStatus('saved');
-        } catch (error) {
-            console.error('Fehler beim Speichern der Shapes in der Datenbank:', error);
-            setSaveStatus('unsaved');
-        }
-    };
-
-    // Funktion zum Speichern der PDF
     const savePdf = async () => {
         const pdfData: Pdf = {
             name: pdf.name,
@@ -122,6 +166,7 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                 maxPages: 1,
             }}
             onMount={(editor) => {
+                editorRef.current = editor;
                 // Erstelle zuerst die Assets
                 editor.createAssets(
                     pdf.pages.map((page) => ({
@@ -258,9 +303,9 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                 }, PDF_SAVE_DELAY);
 
                 // Prüfe regelmäßig auf Änderungen der Shapes
-                const saveInterval = setInterval(() => {
-                    if (hasChanges.current) {
-                        saveShapes(editor);
+                const shapeSaveIntervalId = setInterval(() => {
+                    if (editorRef.current) {
+                        autoSaveShapes(editorRef.current);
                     }
                 }, SAVE_INTERVAL);
 
@@ -268,24 +313,27 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                 editor.sideEffects.registerAfterChangeHandler('shape', (prev, next) => {
                     if (!next.isLocked) {
                         hasChanges.current = true;
+                        if (saveStatus !== 'unsaved' && saveStatus !== 'saving') {
+                            setSaveStatus('unsaved');
+                        }
                     }
                 });
 
                 // Intervall zum Speichern der Scrollposition
-                const scrollInterval = setInterval(() => {
-                    const camera = editor.getCamera();
-                    saveScrollPositionToDB(pdf.name, camera.x, camera.y);
+                const scrollSaveIntervalId = setInterval(() => {
+                    if (editorRef.current) { // Sicherstellen, dass editorRef.current existiert
+                        const camera = editorRef.current.getCamera();
+                        saveScrollPositionToDB(pdf.name, camera.x, camera.y);
+                    }
                 }, SAVE_INTERVAL);
 
                 // Cleanup beim Unmount
                 return () => {
-                    clearInterval(saveInterval);
-                    if (hasChanges.current) {
-                        saveShapes(editor);
-                        const camera = editor.getCamera();
-                        saveScrollPositionToDB(pdf.name, camera.x, camera.y);
+                    clearInterval(shapeSaveIntervalId);
+                    clearInterval(scrollSaveIntervalId);
+                    if (editorRef.current) {
+                        forceSaveAllPendingChanges(editorRef.current);
                     }
-                    clearInterval(scrollInterval);
                 };
             }}
             components={components}

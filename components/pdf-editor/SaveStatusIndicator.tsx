@@ -5,7 +5,7 @@ export type SavingStatus = 'saving' | 'saved' | 'unsaved';
 
 export default function SaveStatusIndicator({ status }: { status: SavingStatus }) {
     return (
-        <div className="SaveStatusIndicator bg-white w-fit mt-3 rounded-md">
+        <div className="SaveStatusIndicator bg-white w-fit rounded-md">
             <div className={cn(
                 "flex items-center gap-1 px-2 py-1 rounded-md shadow-sm",
                 status === 'saved' && "bg-green-500/10 opacity-100 text-green-500",
