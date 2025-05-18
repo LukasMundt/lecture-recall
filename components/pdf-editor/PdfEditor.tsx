@@ -20,7 +20,7 @@ import { Pdf } from "@/components/pdf-editor/pdf.types";
 import { saveToDB, loadFromDB, SavedData } from '@/dexie/db';
 import { saveLastOpenedPdf } from './logic';
 import Loading from '../Loading';
-import SaveStatusIndicator, {SavingStatus} from './SaveStatusIndicator';
+import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
 
 // TODO:
 // - prevent changing pages (create page, change page, move shapes to new page)
@@ -118,6 +118,9 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
 
     return (
         <Tldraw
+            options={{
+                maxPages: 1
+            }}
             onMount={(editor) => {
                 // Erstelle zuerst die Assets
                 editor.createAssets(
