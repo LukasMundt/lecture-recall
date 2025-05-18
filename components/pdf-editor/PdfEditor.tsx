@@ -17,13 +17,13 @@ import {
 import './style.css'
 import { ExportPdfButton } from "@/components/pdf-editor/ExportPdfButton";
 import { Pdf } from "@/components/pdf-editor/pdf.types";
-import { saveToDB, loadFromDB, SavedData } from '@/dexie/db';
+import { saveToDB, loadFromDB, SavedData, loadScrollPositionsFromDB, saveScrollPositionToDB } from '@/dexie/db';
 import { saveLastOpenedPdf } from './logic';
 import Loading from '../Loading';
 import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
 
 // TODO:
-// - prevent changing pages (create page, change page, move shapes to new page)
+// - prevent sending shapes behind the pages
 // - prevent locked shape context menu
 // - inertial scrolling for constrained camera
 // - render pages on-demand instead of all at once.
@@ -119,7 +119,7 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
     return (
         <Tldraw
             options={{
-                maxPages: 1
+                maxPages: 1,
             }}
             onMount={(editor) => {
                 // Erstelle zuerst die Assets
@@ -223,7 +223,22 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                             behavior: 'contain',
                         },
                     });
-                    editor.setCamera(editor.getCamera(), { reset: true });
+
+                    // Lade die gespeicherte Scrollposition und setze die Kamera entsprechend,
+                    // oder wende den initialZoom an, falls keine Position gespeichert ist.
+                    loadScrollPositionsFromDB(pdf.name).then((scrollData) => {
+                        if (scrollData) {
+                            // Gespeicherte Position gefunden, verwende diese.
+                            editor.setCamera({
+                                ...editor.getCamera(),
+                                x: scrollData.x,
+                                y: scrollData.y
+                            });
+                        } else {
+                            // Keine gespeicherte Position, wende initialZoom und Constraints an.
+                            editor.setCamera(editor.getCamera(), { reset: true });
+                        }
+                    });
                 }
 
                 let isMobile = editor.getViewportScreenBounds().width < 840;
@@ -256,12 +271,21 @@ export function PdfEditor({ pdf }: { pdf: Pdf }) {
                     }
                 });
 
+                // Intervall zum Speichern der Scrollposition
+                const scrollInterval = setInterval(() => {
+                    const camera = editor.getCamera();
+                    saveScrollPositionToDB(pdf.name, camera.x, camera.y);
+                }, SAVE_INTERVAL);
+
                 // Cleanup beim Unmount
                 return () => {
                     clearInterval(saveInterval);
                     if (hasChanges.current) {
                         saveShapes(editor);
+                        const camera = editor.getCamera();
+                        saveScrollPositionToDB(pdf.name, camera.x, camera.y);
                     }
+                    clearInterval(scrollInterval);
                 };
             }}
             components={components}

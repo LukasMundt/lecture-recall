@@ -1,12 +1,12 @@
 "use client";
-import {Pdf} from "@/components/pdf-editor/pdf.types";
-import {PdfEditor} from "@/components/pdf-editor/PdfEditor";
-import {loadFromDB, SavedData} from "@/dexie/db";
-import {useEffect, useState} from "react";
+import { Pdf } from "@/components/pdf-editor/pdf.types";
+import { PdfEditor } from "@/components/pdf-editor/PdfEditor";
+import { loadFromDB, SavedData } from "@/dexie/db";
+import { useEffect, useState } from "react";
 import Loading from "../Loading";
-import {toast} from "sonner";
+import { toast } from "sonner";
 
-export default function PdfEditorWrapper({pdf, onError}: { pdf: Pdf | string, onError: (error?: string) => void }) {
+export default function PdfEditorWrapper({ pdf, onError }: { pdf: Pdf | string, onError: (error?: string) => void }) {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<SavedData | undefined>(undefined);
 
@@ -41,7 +41,7 @@ export default function PdfEditorWrapper({pdf, onError}: { pdf: Pdf | string, on
     }, [pdf]);
 
     if (typeof pdf !== "string") {
-        return <PdfEditor pdf={pdf}/>;
+        return <PdfEditor pdf={pdf} />;
     }
 
     if (loading) {
@@ -52,5 +52,5 @@ export default function PdfEditorWrapper({pdf, onError}: { pdf: Pdf | string, on
         return <div className="p-4">Keine PDF-Daten gefunden</div>;
     }
 
-    return <PdfEditor pdf={data.pdf}/>;
+    return <PdfEditor pdf={data.pdf} />;
 }

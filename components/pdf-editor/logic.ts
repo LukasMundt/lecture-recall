@@ -1,7 +1,6 @@
 // Hilfsfunktion zum Laden der zuletzt geöffneten PDF
 export function getLastOpenedPdf(): string | null {
     try {
-        console.log(sessionStorage.getItem(`last-opened-pdf`))
         return sessionStorage.getItem(`last-opened-pdf`);
     } catch (error) {
         console.error('Fehler beim Laden der zuletzt geöffneten PDF:', error);

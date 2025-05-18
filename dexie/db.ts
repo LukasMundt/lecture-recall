@@ -18,11 +18,15 @@ export interface SavedShape {
 
 class PdfEditorDatabase extends Dexie {
     pdfs!: Table<SavedData>;
+    scrollPositions!: Table<{ name: string; x: number; y: number; }>;
 
     constructor() {
         super('pdf-editor-db');
         this.version(1).stores({
             pdfs: 'name'
+        });
+        this.version(1).stores({
+            scrollPositions: 'name'
         });
     }
 }
@@ -54,5 +58,28 @@ export async function loadRecentLocalPdfs(): Promise<{name: string, lastModified
     } catch (error) {
         console.error('Fehler beim Laden der Namen der gespeicherten PDFs:', error);
         return [];
+    }
+}
+
+// Hilfsfunktion zum Laden der Scrollposition
+export async function loadScrollPositionsFromDB(name: string): Promise<{ x: number; y: number; } | undefined> {
+    try {
+        return await db.scrollPositions.get(name);
+    } catch (error) {
+        console.error('Fehler beim Laden der Scrollposition aus der Datenbank:', error);
+        return undefined;
+    }
+}
+
+// Hilfsfunktion zum Speichern der Scrollposition
+export async function saveScrollPositionToDB(name: string, x: number, y: number) {
+    try {
+        await db.scrollPositions.put({
+            name,
+            x,
+            y
+        });
+    } catch (error) {
+        console.error('Fehler beim Speichern der Scrollposition in der Datenbank:', error);
     }
 }
