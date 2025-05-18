@@ -1,14 +1,14 @@
 "use client";
 import { Pdf } from "@/components/pdf-editor/pdf.types";
 import { PdfEditor } from "@/components/pdf-editor/PdfEditor";
-import { loadFromDB, SavedData } from "@/dexie/db";
 import { useEffect, useState } from "react";
 import Loading from "../Loading";
 import { toast } from "sonner";
+import {loadPdfFromDB, SavedPdf} from "@/dexie/db";
 
 export default function PdfEditorWrapper({ pdf, onBackToPick }: { pdf: Pdf | string, onBackToPick: () => void }) {
     const [loading, setLoading] = useState(true);
-    const [data, setData] = useState<SavedData | undefined>(undefined);
+    const [data, setData] = useState<SavedPdf | undefined>(undefined);
 
     useEffect(() => {
         async function loadPdf(): Promise<void> {
@@ -18,7 +18,7 @@ export default function PdfEditorWrapper({ pdf, onBackToPick }: { pdf: Pdf | str
 
             try {
                 setLoading(true);
-                const data = await loadFromDB(pdf);
+                const data = await loadPdfFromDB(pdf);
 
                 if (!data?.pdf) {
                     onBackToPick();

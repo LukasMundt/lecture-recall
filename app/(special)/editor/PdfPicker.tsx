@@ -10,7 +10,7 @@ import {FileText, Clock, Plus} from "lucide-react";
 import {Pdf, PdfPage} from "@/components/pdf-editor/pdf.types";
 import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
 import {ScrollArea} from "@/components/ui/scroll-area";
-import {loadRecentLocalPdfs} from "@/dexie/db";
+import {loadRecentLocalPdfsFromDB} from "@/dexie/db";
 import Loading from '@/components/Loading';
 
 const pageSpacing = 32;
@@ -25,7 +25,7 @@ export function PdfPicker({onOpenPdf}: PdfPickerProps) {
 
     useEffect(() => {
         async function loadRecentPdfs() {
-            const allPdfs = await loadRecentLocalPdfs();
+            const allPdfs = await loadRecentLocalPdfsFromDB();
             if (allPdfs) {
                 setRecentPdfs(allPdfs.sort((a, b) => 
                     b.lastModified.getTime() - a.lastModified.getTime()
