@@ -16,22 +16,23 @@ import Loading from '@/components/Loading';
 const pageSpacing = 32;
 
 interface PdfPickerProps {
-    onOpenPdf: (pdf: any) => void;
+    onOpenPdf: (pdf: Pdf | string) => void;
 }
 
 export function PdfPicker({onOpenPdf}: PdfPickerProps) {
     const [isLoading, setIsLoading] = useState(false);
-    const [recentPdfs, setRecentPdfs] = useState<{name: string, lastModified: Date}[]>([]);
+    const [recentPdfs, setRecentPdfs] = useState<{ name: string, lastModified: Date }[]>([]);
 
     useEffect(() => {
         async function loadRecentPdfs() {
             const allPdfs = await loadRecentLocalPdfsFromDB();
             if (allPdfs) {
-                setRecentPdfs(allPdfs.sort((a, b) => 
+                setRecentPdfs(allPdfs.sort((a, b) =>
                     b.lastModified.getTime() - a.lastModified.getTime()
                 ));
             }
         }
+
         loadRecentPdfs();
     }, []);
 
@@ -130,11 +131,11 @@ export function PdfPicker({onOpenPdf}: PdfPickerProps) {
                                         className="p-4 rounded-lg cursor-pointer hover:bg-accent transition-colors flex items-center gap-3"
                                         onClick={() => onOpenPdf(pdf.name)}
                                     >
-                                        <FileText className="h-5 w-5 text-muted-foreground" />
+                                        <FileText className="h-5 w-5 text-muted-foreground"/>
                                         <div>
                                             <p className="font-medium">{pdf.name}</p>
                                             <p className="text-sm text-muted-foreground flex items-center gap-1">
-                                                <Clock className="h-3 w-3" />
+                                                <Clock className="h-3 w-3"/>
                                                 {new Date(pdf.lastModified).toLocaleString()}
                                             </p>
                                         </div>
@@ -149,9 +150,9 @@ export function PdfPicker({onOpenPdf}: PdfPickerProps) {
                     </ScrollArea>
                 </CardContent>
             </Card>
-            
+
             <Button onClick={onClickOpenPdf} size="lg" className="gap-2">
-                <Plus className="h-5 w-5" />
+                <Plus className="h-5 w-5"/>
                 Neue PDF öffnen
             </Button>
         </div>
