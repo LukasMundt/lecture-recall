@@ -1,5 +1,5 @@
 "use client";
-import {useMemo, useEffect, useRef, useState, useCallback} from 'react';
+import { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import {
     Box,
     SVGContainer,
@@ -13,11 +13,11 @@ import {
     useEditor,
     IndexKey,
     TLShapeId,
-    DefaultMenuPanel, Editor, TLShape,
+    DefaultMenuPanel, Editor, TLShape
 } from 'tldraw';
 import './style.css'
-import {ExportPdfButton} from "@/components/pdf-editor/ExportPdfButton";
-import {Pdf} from "@/components/pdf-editor/pdf.types";
+import { ExportPdfButton } from "@/components/pdf-editor/ExportPdfButton";
+import { Pdf } from "@/components/pdf-editor/pdf.types";
 import {
     loadScrollPositionsFromDB, loadShapesFromDB,
     SavedPdf,
@@ -26,11 +26,11 @@ import {
     saveScrollPositionToDB,
     saveShapesToDB
 } from '@/dexie/db';
-import {removeLastOpenedPdf, saveLastOpenedPdf} from './logic';
+import { removeLastOpenedPdf, saveLastOpenedPdf } from './logic';
 import Loading from '../Loading';
-import SaveStatusIndicator, {SavingStatus} from './SaveStatusIndicator';
-import {Button} from "@/components/ui/button";
-import {ArrowLeft} from 'lucide-react';
+import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
+import { Button } from "@/components/ui/button";
+import { ArrowUpLeft } from 'lucide-react';
 
 // TODO:
 // - prevent sending shapes behind the pages
@@ -38,7 +38,7 @@ import {ArrowLeft} from 'lucide-react';
 // - inertial scrolling for constrained camera
 // - render pages on-demand instead of all at once.
 
-export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => void }) {
+export function PdfEditor({ pdf, onBackToPick }: { pdf: Pdf, onBackToPick: () => void }) {
     const [saveStatus, setSaveStatus] = useState<SavingStatus>('saved');
     const lastSaveTime = useRef<number>(0);
     const hasChanges = useRef<boolean>(false);
@@ -114,19 +114,19 @@ export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => v
     const components = useMemo<TLComponents>(
         () => ({
             PageMenu: null,
-            InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf}/>,
+            InFrontOfTheCanvas: () => <PageOverlayScreen pdf={pdf} />,
             LoadingScreen: () => <Loading><p className='text-lg'>Lade PDF...</p></Loading>,
             SharePanel: () => (
-                <div className="flex items-center gap-2" style={{zIndex: 100000}}>
-                    <SaveStatusIndicator status={saveStatus}/>
-                    <ExportPdfButton pdf={pdf}/>
+                <div className="flex items-center gap-2" style={{ zIndex: 100000 }}>
+                    <SaveStatusIndicator status={saveStatus} />
+                    <ExportPdfButton pdf={pdf} />
                 </div>
             ),
             MenuPanel: () => (<div className='flex items-center gap-2'>
-                <DefaultMenuPanel/>
+                <DefaultMenuPanel />
                 <Button onClick={handleBackToPick} variant="outline" size="sm"
-                        className="cursor-pointer ButtonOnCanvas flex items-center gap-1">
-                    <ArrowLeft size={16}/> Zurück
+                    className="cursor-pointer ButtonOnCanvas flex items-center gap-1">
+                    <ArrowUpLeft size={16} /> Zurück
                 </Button>
             </div>)
         }),
@@ -237,7 +237,7 @@ export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => v
                     (prev, next) => {
                         if (!shapeIdSet.has(next.id)) return next;
                         if (next.isLocked) return next;
-                        return {...prev, isLocked: true};
+                        return { ...prev, isLocked: true };
                     }
                 );
 
@@ -271,8 +271,8 @@ export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => v
                     editor.setCameraOptions({
                         constraints: {
                             bounds: targetBounds,
-                            padding: {x: isMobile ? 16 : 164, y: 64},
-                            origin: {x: 0.5, y: 0},
+                            padding: { x: isMobile ? 16 : 164, y: 64 },
+                            origin: { x: 0.5, y: 0 },
                             initialZoom: 'fit-x-100',
                             baseZoom: 'default',
                             behavior: 'contain',
@@ -291,7 +291,7 @@ export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => v
                             });
                         } else {
                             // Keine gespeicherte Position, wende initialZoom und Constraints an.
-                            editor.setCamera(editor.getCamera(), {reset: true});
+                            editor.setCamera(editor.getCamera(), { reset: true });
                         }
                     });
                 }
@@ -352,8 +352,8 @@ export function PdfEditor({pdf, onBackToPick}: { pdf: Pdf, onBackToPick: () => v
 }
 
 const PageOverlayScreen = track(function PageOverlayScreen({
-                                                               pdf,
-                                                           }: {
+    pdf,
+}: {
     pdf: Pdf;
 }) {
     const editor = useEditor();

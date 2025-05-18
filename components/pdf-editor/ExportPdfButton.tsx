@@ -24,7 +24,7 @@ export function ExportPdfButton({ pdf }: { pdf: Pdf }) {
             }}
         >
             {exportProgress ? `Exporting... ${Math.round(exportProgress * 100)}%` :
-                <span className="flex gap-3"><Download />Export PDF</span>}
+                <span className="flex gap-3"><Download /><span className="hidden md:block">Export PDF</span></span>}
         </Button>
     )
 }
