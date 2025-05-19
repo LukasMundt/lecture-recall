@@ -38,7 +38,7 @@ export default function PdfEditorWrapper({ pdf, onBackToPick }: { pdf: Pdf | str
         if (typeof pdf === "string") {
             loadPdf();
         }
-    }, [pdf]);
+    }, [pdf, onBackToPick]);
 
     if (typeof pdf !== "string") {
         return <PdfEditor pdf={pdf} onBackToPick={onBackToPick} />;

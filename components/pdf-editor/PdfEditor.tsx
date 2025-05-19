@@ -90,7 +90,7 @@ export function PdfEditor({ pdf, onBackToPick }: { pdf: Pdf, onBackToPick: () =>
             }
         }
         return savedSuccessfully;
-    }, [performSaveShapesLogic, pdf.name]);
+    }, [performSaveShapesLogic]);
 
     const handleBackToPick = useCallback(async () => {
         if (editorRef.current) {
