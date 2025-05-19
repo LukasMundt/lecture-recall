@@ -3,7 +3,7 @@ import {useState, useEffect} from "react";
 import {PdfPicker} from "@/app/(special)/editor/PdfPicker";
 import {Pdf} from "@/components/pdf-editor/pdf.types";
 import PdfEditorWrapper from "@/components/pdf-editor/PdfEditorWrapper";
-import {getLastOpenedPdf} from "@/components/pdf-editor/logic";
+import {getLastOpenedPdf} from "@/components/pdf-editor/store";
 import Loading from "@/components/Loading";
 
 type State =
