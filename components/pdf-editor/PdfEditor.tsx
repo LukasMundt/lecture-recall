@@ -26,7 +26,7 @@ import {
     saveScrollPositionToDB,
     saveShapesToDB
 } from '@/dexie/db';
-import { removeLastOpenedPdf, saveLastOpenedPdf } from './logic';
+import { removeLastOpenedPdf, saveLastOpenedPdf } from './store';
 import Loading from '../Loading';
 import SaveStatusIndicator, { SavingStatus } from './SaveStatusIndicator';
 import { Button } from "@/components/ui/button";
