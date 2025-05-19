@@ -1,18 +1,40 @@
 "use client";
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import {
     AssetRecordType,
     Box,
     createShapeId,
 } from 'tldraw';
 import {Button} from "@/components/ui/button";
-import {Loader} from "lucide-react";
+import {FileText, Clock, Plus} from "lucide-react";
 import {Pdf, PdfPage} from "@/components/pdf-editor/pdf.types";
+import {Card, CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
+import {ScrollArea} from "@/components/ui/scroll-area";
+import {loadRecentLocalPdfsFromDB} from "@/dexie/db";
+import Loading from '@/components/Loading';
 
 const pageSpacing = 32;
 
-export function PdfPicker({onOpenPdf}: { onOpenPdf(pdf: Pdf): void }) {
+interface PdfPickerProps {
+    onOpenPdf: (pdf: Pdf | string) => void;
+}
+
+export function PdfPicker({onOpenPdf}: PdfPickerProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const [recentPdfs, setRecentPdfs] = useState<{ name: string, lastModified: Date }[]>([]);
+
+    useEffect(() => {
+        async function loadRecentPdfs() {
+            const allPdfs = await loadRecentLocalPdfsFromDB();
+            if (allPdfs) {
+                setRecentPdfs(allPdfs.sort((a, b) =>
+                    b.lastModified.getTime() - a.lastModified.getTime()
+                ));
+            }
+        }
+
+        loadRecentPdfs();
+    }, []);
 
     async function loadPdf(name: string, source: ArrayBuffer): Promise<Pdf> {
         const PdfJS = await import('pdfjs-dist');
@@ -89,15 +111,50 @@ export function PdfPicker({onOpenPdf}: { onOpenPdf(pdf: Pdf): void }) {
     }
 
     if (isLoading) {
-        return (<div className="h-dvh w-full items-center flex flex-col justify-center absolute">
-            <Loader className="animate-spin" />
-            <span className="sr-only">Loading</span>
-        </div>);
+        return <Loading/>;
     }
 
     return (
-        <div className="h-dvh w-full items-center flex justify-center absolute">
-            <Button onClick={onClickOpenPdf}>Open PDF</Button>
+        <div className="h-dvh w-full items-center flex flex-col justify-center absolute p-4 gap-8">
+            <Card className="w-full max-w-2xl">
+                <CardHeader>
+                    <CardTitle>Zuletzt geöffnete PDFs</CardTitle>
+                    <CardDescription>Wählen Sie eine PDF aus der Liste oder öffnen Sie eine neue Datei</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-[300px]">
+                        {recentPdfs.length > 0 ? (
+                            <div className="space-y-2">
+                                {recentPdfs.map((pdf) => (
+                                    <div
+                                        key={pdf.name}
+                                        className="p-4 rounded-lg cursor-pointer hover:bg-accent transition-colors flex items-center gap-3"
+                                        onClick={() => onOpenPdf(pdf.name)}
+                                    >
+                                        <FileText className="h-5 w-5 text-muted-foreground"/>
+                                        <div>
+                                            <p className="font-medium">{pdf.name}</p>
+                                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                                                <Clock className="h-3 w-3"/>
+                                                {new Date(pdf.lastModified).toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-8">
+                                Keine kürzlich geöffneten PDFs
+                            </div>
+                        )}
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+
+            <Button onClick={onClickOpenPdf} size="lg" className="gap-2">
+                <Plus className="h-5 w-5"/>
+                Neue PDF öffnen
+            </Button>
         </div>
     );
 }

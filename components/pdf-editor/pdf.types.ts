@@ -1,4 +1,4 @@
-import {Box, TLAssetId, TLShapeId} from "tldraw";
+import { Box, TLAssetId, TLShapeId } from 'tldraw';
 
 export interface PdfPage {
     src: string;
@@ -10,5 +10,5 @@ export interface PdfPage {
 export interface Pdf {
     name: string;
     pages: PdfPage[];
-    source: string | ArrayBuffer;
+    source: ArrayBuffer;
 }
